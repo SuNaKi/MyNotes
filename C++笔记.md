@@ -1,5 +1,86 @@
 # C++基础笔记
 
+### 编译链接
+
+#### 进程虚拟地址空间
+
+<img src="img/image-20230728143828473.png" alt="image-20230728143828473" style="zoom:50%;" />
+
+- [代码段（Text）：存储程序的二进制代码，通常是只读的，可以被多个进程共享](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)[2](https://zhuanlan.zhihu.com/p/348171413)
+
+- [rodata段：用于存放常量数据，比如程序中定义为const的全局变量，#define定义的常量，以及诸如“Hello World”的字符串常量](https://blog.csdn.net/Nowizkang/article/details/120548730)
+
+- [数据段（Data）：存储程序的初始化过的全局变量和静态变量](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)[2](https://zhuanlan.zhihu.com/p/348171413)
+
+- [BSS段（BSS）：存储程序的未初始化过的全局变量和静态变量](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)[2](https://zhuanlan.zhihu.com/p/348171413)
+
+- [堆段（Heap）：存储程序动态分配的内存，例如使用malloc或new等函数申请的内存](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)[2](https://zhuanlan.zhihu.com/p/348171413)
+
+- [栈段（Stack）：存储程序的局部变量，函数参数，返回地址等信息，遵循先进后出的原则](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)[2](https://zhuanlan.zhihu.com/p/348171413)
+
+- [共享段（Shared）：存储程序使用的共享内存或动态链接库等资源](https://zhuanlan.zhihu.com/p/613254804)[1](https://zhuanlan.zhihu.com/p/613254804)
+
+- [ZONE_DMA的范围是0~16MB，该区域的物理页面专门供I/O设备的DMA使用，因为一些旧的设备只能访问低于16MB的物理地址](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[1](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[2](https://www.kernel.org/doc/html/latest/mm/physical_memory.html)[3](https://www.cnblogs.com/wuchanming/p/4756911.html)。
+
+- [ZONE_NORMAL的范围是16MB~896MB，该区域的物理页面是内核能够直接使用的，因为它们和内核空间有一对一的映射关系](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[1](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[2](https://www.kernel.org/doc/html/latest/mm/physical_memory.html)[3](https://www.cnblogs.com/wuchanming/p/4756911.html)。
+
+- [ZONE_HIGHMEM的范围是896MB~结束，该区域即为高端内存，内核不能直接使用，因为它们超过了内核空间能够映射的范围，只能通过临时映射的方式访问](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[1](https://bing.com/search?q=ZONE_DMA+ZONE_NORMAL+ZONE_HIGHMEM)[2](https://www.kernel.org/doc/html/latest/mm/physical_memory.html)[3](https://www.cnblogs.com/wuchanming/p/4756911.html)。
+
+  ### 链接过程
+
+  ![image-20230728145201115](img/image-20230728145201115.png)
+
+  预处理编译汇编后生产可重定向目标文件，其中外部的符号会用UND来定义
+
+  编译时会先合并相关.o文件的段，在符号表合并后进行符号解析，最后把UND符号进行重定向完成链接
+
+  ![image-20230728145734653](img/image-20230728145734653.png)
+
+#### 形参带默认值的函数
+
+1.给默认值时从左往右给
+
+2.在函数调用时比没有默认值的函数更快，因为省去了形参传入的指令
+
+3.可以在定义处给默认值，也可以在声明处给默认值，但只能出现一次
+
+#### 掌握inline内联函数
+
+inline内联函数：在编译过程中没有函数调用开销，在函数调用点直接把函数代码展开处理了
+
+inline函数不再生成相应的函数符号
+
+inline只是建议编译器把此函数作为内联函数处理，但是编译器并不会把所有加上inline的都处理厂内联函数如：递归
+
+再debug版本中，inline是不起作用的，只在release版本中起作用
+
+与宏定义相比，inline在编译时会检查类型判断语法而宏定义只是简单的替换，inline更加安全
+
+#### 函数重载
+
+1. C++为什么支持函数重载，C语言不支持函数重载？
+
+C++代码产生函数符号的时候，函数名+参数列表类型组成的!c代码产生函数符号的时候，函数名来决定!
+
+2.函数重载需要注意些什么?
+
+3.C++和C语言代码之间如何互相调用？
+
+C调用 C++:无法直接调用了! 怎么办? 把C++源码扩在extern“C”里面
+C++ 调用 C代码:无法直接调用了! 怎么办? 把c函数的声明扩在extern"C"里面
+
+什么是函数重载?
+
+1.一组函数，其中函数名相同，参数列表的个数或者类型不同，那么这一组函数就称作-函数重载。
+
+2.一组函数要称得上重载，首先必须是在同一个作用域中的。
+
+3.const或者volatile的时候，是怎么影响判断类型的
+
+4.一组函数，函数名和参数列表相同，仅仅返回值不同不叫重载
+
+重载是静态多态的一种
+
 \#if 0是一个注释代码块的技巧，它将注释掉的代码块放在条件编译指令中，并将#if 0替换为#if 1可以快速启用该代码块。
 
 ## 多态与继承
